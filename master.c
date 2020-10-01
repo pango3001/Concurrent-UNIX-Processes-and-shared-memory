@@ -22,6 +22,13 @@
 
 #define PERM (S_IRUSR | S_IWUSR)
 
+typedef struct{
+	int id;
+	int key_t;  //key_t key;
+	char strings[64][64]; // array of strings
+} shared_memory;
+
+
 //=========== MAIN ============
 int main(int argc, char **argv){
 	unsigned int key = 63376;
@@ -31,12 +38,7 @@ int main(int argc, char **argv){
 	unsigned int max_total_childs = 2; // number of children allowed to exist in the system at once
 	unsigned int max_time = 100; //time in seconds after which the process will terminate
 
-	typedef struct{
-	int id;
-	int key_t;  //key_t key;
 
-	char strings[64][64]; // array of strings
-	} shared_memory;
 	
 	
 	// returns the identifier of the System V shared memory segment associated with the value of the argument key
