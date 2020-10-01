@@ -37,9 +37,6 @@ int main(int argc, char **argv){
 	char strings[256][256]; // array of strings
 	} shared_memory;
 	
-	int shm_id;
-	key_t mem_key;
-	int *ptr;
 	
 	char strings[256][256]; // array of strings
 	// returns the identifier of the System V shared memory segment associated with the value of the argument key
