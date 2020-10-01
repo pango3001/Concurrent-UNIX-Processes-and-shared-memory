@@ -13,6 +13,7 @@
 #include <sys/shm.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/ipc.h>
 #include <getopt.h>
 #include <errno.h>
 #include <signal.h>
@@ -30,15 +31,17 @@ int main(int argc, char **argv){
 	unsigned int max_total_childs = 2; // number of children allowed to exist in the system at once
 	unsigned int max_time = 100; //time in seconds after which the process will terminate
 
-	struct Shared_mem{
+	typedef struct{
 	int id;
 	int key_t;  //key_t key;
 	char strings[256][256]; // array of strings
 	} shared_memory;
 	
+	int shm_id;
+	key_t mem_key;
 	int *ptr;
 	
-	
+	char strings[256][256]; // array of strings
 	// returns the identifier of the System V shared memory segment associated with the value of the argument key
 	int shm_id = shmget(key, sizeof(shared_memory), PERM | IPC_CREAT | IPC_EXCL);
 	if (shm_id == -1) {
@@ -47,7 +50,7 @@ int main(int argc, char **argv){
 	}
 	
 	// attaches the System V shared memory segment identified by shmid to the address space of the calling process
-	ptr = (shared_memory*)shmat(shm_id, NULL, 0);
+	shared_memory* ptr = (shared_memory*) shmat(shm_id, NULL, 0);
 	if (ptr == (void*)-1) {
 		perror("Failed to attach shared memory segment");
 		return 1;
