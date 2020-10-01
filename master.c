@@ -35,7 +35,8 @@ int main(int argc, char **argv){
 	int key_t;  //key_t key;
 	char strings[256][256]; // array of strings
 	} shared_memory;
-	shared_memory* ptr;
+	
+	int *ptr;
 	
 	
 	// returns the identifier of the System V shared memory segment associated with the value of the argument key
@@ -46,7 +47,7 @@ int main(int argc, char **argv){
 	}
 	
 	// attaches the System V shared memory segment identified by shmid to the address space of the calling process
-	shared_memory* ptr = (shared_memory*)shmat(shm_id, NULL, 0);
+	ptr = (shared_memory*)shmat(shm_id, NULL, 0);
 	if (ptr == (void*)-1) {
 		perror("Failed to attach shared memory segment");
 		return 1;
