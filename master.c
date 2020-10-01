@@ -34,11 +34,10 @@ int main(int argc, char **argv){
 	typedef struct{
 	int id;
 	int key_t;  //key_t key;
-	char strings[256][256]; // array of strings
+	char strings[64][64]; // array of strings
 	} shared_memory;
 	
 	
-	char strings[256][256]; // array of strings
 	// returns the identifier of the System V shared memory segment associated with the value of the argument key
 	int shm_id = shmget(key, sizeof(shared_memory), PERM | IPC_CREAT | IPC_EXCL);
 	if (shm_id == -1) {
@@ -89,7 +88,7 @@ int main(int argc, char **argv){
 		return(-1);
 	}
 	int index = 0;
-	char line[256];
+	char line[64];
 	while (fgets(line, sizeof(line), fp)){
 		line[strlen(line) - 1] = '\0';
 		strcpy(ptr->strings[index], line);
@@ -99,14 +98,6 @@ int main(int argc, char **argv){
 	printf("here");
 	
 	fclose(fp);
-	// print arguments and array from file
-	index = 0;
-	int size = sizeof(ptr->strings);
-	while(index < size){
-		printf("here2");
-		printf("%s ", ptr->strings[index]);
-		index++;
-	}
 	
 	// detach from memory segment
 	int detach = shmdt(ptr);
