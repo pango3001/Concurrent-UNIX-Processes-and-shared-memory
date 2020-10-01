@@ -36,8 +36,6 @@ int main(int argc, char **argv){
 	int key_t;  //key_t key;
 
 	char strings[64][64]; // array of strings
-=======
-	char strings[128][256]; // array of strings
 	} shared_memory;
 	
 	
@@ -97,7 +95,6 @@ int main(int argc, char **argv){
 		strcpy(ptr->strings[index], line);
 		index++;
 	}
-	
 	fclose(fp);
 
 
