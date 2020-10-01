@@ -24,10 +24,9 @@
 #define RSIZ 32
 #define PERMS (S_IRUSR | S_IWUSR)
 
-
+//========== PROTOTYPES ==========
 void run_child(int id);
 void free_shared_mem();
-int create_sch_id();
 
 // structure for the shared memory
 typedef struct{
@@ -41,7 +40,12 @@ typedef struct{
 unsigned int key = ftok("./master", 'a');
 
 // returns the identifier of the System V shared memory segment associated with the value of the argument key
-int shm_id = create_sch_id();
+int shm_id = shmget(key, sizeof(shared_memory), PERMS | IPC_CREAT | IPC_EXCL);
+if (shm_id == -1) {
+perror("Failed to create shared memory segment");
+			return 1;
+	}
+return sch_id;
 
 // attaches the System V shared memory segment identified by shmid to the address space of the calling process
 shared_memory* ptr = (shared_memory*) shmat(shm_id, NULL, 0);
@@ -56,9 +60,7 @@ if (ptr == (void*)-1) {
 
 
 //=========== MAIN ============
-int main(int argc, char **argv){
-	unsigned int key = ftok("./master", 'a');//Key generation for shared Mem
-	
+int main(int argc, char **argv){	
 	unsigned int options;
 	unsigned int max_childs_master = 4; // maximum total of child processes master will ever create
 	unsigned int max_total_childs = 2; // number of children allowed to exist in the system at once
@@ -150,7 +152,7 @@ void run_child(int id){
         execl("./palin", "palin", buffer, (char*) NULL);
 }
 
-void free_shared_mem(){
+int free_shared_mem(){
 	//detatch from the shared memory segment
 	int detach = shmdt(ptr);
         if (detach == -1){
@@ -163,16 +165,5 @@ void free_shared_mem(){
                 perror("Failed to remove shared memory segment");
                 return 1;
         }
-}
-
-
-
-int create_sch_id(){
-	// returns the identifier of the System V shared memory segment associated with the value of the argument key
-	int shm_id = shmget(key, sizeof(shared_memory), PERMS | IPC_CREAT | IPC_EXCL);
-	if (shm_id == -1) {
-	perror("Failed to create shared memory segment");
-				return 1;
-        }
-	return sch_id;		
+	return 1
 }
