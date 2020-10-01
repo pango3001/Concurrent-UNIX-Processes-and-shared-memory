@@ -20,6 +20,8 @@
 #include <string.h>
 #include <time.h>
 
+#define LSIZ 128 
+#define RSIZ 32
 #define PERM (S_IRUSR | S_IWUSR)
 
 typedef struct{
@@ -90,21 +92,31 @@ int main(int argc, char **argv){
 		perror("ERROR ");
 		return(-1);
 	}
-	int index = 0;
-	char line[64];
+	int i = 0;
+
+
+/*
 	while (fgets(line, sizeof(line), fp)){
 		line[strlen(line) - 1] = '\0';
 		strcpy(ptr->strings[index], line);
 		index++;
 	}
+	
+*/
+	while(fgets(ptr->strings[i],LSIZ, fp)){
+		ptr->strings[i][strlen(ptr->strings[i]) - 1] = '\0';
+		i++;
+	}
+	int total = i;
+	
 	fclose(fp);
 
 
 	// print arguments and array from file
-	index = 0;
+	int index = 0;
 	int size = sizeof(ptr->strings);
-	while(index < size){
-		printf("here2");
+	while(index < total){
+		printf("Line %d: ", (index + 1));
 		printf("%s \n", ptr->strings[index]);
 		index++;
 	}

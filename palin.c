@@ -19,6 +19,8 @@
 #include <time.h>
 #include <stdbool.h>
 
+#define PERM (S_IRUSR | S_IWUSR)
+
 bool isPalindrome(char str[]);
 
 
@@ -31,6 +33,27 @@ typedef struct{
 
 
 int main(int argc, char ** argv){
+	int id = atoi(argv[1]);
+	shared_memory *ptr; // pointer for the shared memory
+
+	
+	unsigned int key = 63376;	
+
+	int shm_id = shmget(key, sizeof(shared_memory), PERM | IPC_CREAT);
+	if (shm_id == -1) {
+		perror("Failed to find shared memory segment");
+		return 1;
+	}
+	
+	// attach shared memory segment
+	shared_memory* ptr = (shared_memory*)shmat(shm_id, NULL, 0);
+	// shmat(segment_id, NULL, SHM_RDONLY) to attach to read only memory
+	if (ptr == (void*)-1) {
+		perror("Failed to attach existing shared memory segment");
+		return 1;
+	}
+
+	
 
 	bool palin = isPalindrome(argv[1]);
 		
@@ -42,6 +65,21 @@ int main(int argc, char ** argv){
 	else{
 		printf("%s is not\n", argv[1]);
 	}
+	
+
+
+	// writing to output files
+	FILE *file = fopen(palin ? "palin.out" : "nopalin.out", "a+"); // a+ appends
+	if(file == NULL){
+		perror("FILE ERROR");
+	}
+	fprintf(file, "%s\n", ptr->strings[id]);
+	fclose(file);
+	
+		
+
+
+
 	return 0;
 }
 
