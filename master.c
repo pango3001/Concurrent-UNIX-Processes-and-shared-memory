@@ -22,11 +22,14 @@
 
 #define LSIZ 128 
 #define RSIZ 32
-#define PERM (S_IRUSR | S_IWUSR)
+#define PERMS (S_IRUSR | S_IWUSR)
 
 
 void run_child(int id);
+void free_shared_mem();
+int create_sch_id();
 
+// structure for the shared memory
 typedef struct{
 	int id;
 	int key_t;  //key_t key;
@@ -34,16 +37,18 @@ typedef struct{
 } shared_memory;
 
 
+// key for shared memory
+unsigned int key = ftok("./master", 'a');
 
-unsigned int key = ftok("./master", 'a');// key for shared memory
+// returns the identifier of the System V shared memory segment associated with the value of the argument key
+int shm_id = create_sch_id();
 
-int shm_id = shmget(key, sizeof(shared_memory), PERM | IPC_CREAT | IPC_EXCL);
-if (shm_id == -1) {
-	perror("Failed to create shared memory segment");
-                return 1;
-        }
-
-
+// attaches the System V shared memory segment identified by shmid to the address space of the calling process
+shared_memory* ptr = (shared_memory*) shmat(shm_id, NULL, 0);
+if (ptr == (void*)-1) {
+	perror("Failed to attach shared memory segment");
+	return 1;
+}
 
 
 
@@ -59,22 +64,6 @@ int main(int argc, char **argv){
 	unsigned int max_total_childs = 2; // number of children allowed to exist in the system at once
 	unsigned int max_time = 100; //time in seconds after which the process will terminate
 
-
-	
-	
-	// returns the identifier of the System V shared memory segment associated with the value of the argument key
-	int shm_id = shmget(key, sizeof(shared_memory), PERM | IPC_CREAT | IPC_EXCL);
-	if (shm_id == -1) {
-		perror("Failed to create shared memory segment");
-		return 1;
-	}
-	
-	// attaches the System V shared memory segment identified by shmid to the address space of the calling process
-	shared_memory* ptr = (shared_memory*) shmat(shm_id, NULL, 0);
-	if (ptr == (void*)-1) {
-		perror("Failed to attach shared memory segment");
-		return 1;
-	}
 
 	//getopts
 	while((options = getopt(argc, argv, "hn:s:t:")) != -1){
@@ -114,14 +103,6 @@ int main(int argc, char **argv){
 	int i = 0;
 
 
-/*
-	while (fgets(line, sizeof(line), fp)){
-		line[strlen(line) - 1] = '\0';
-		strcpy(ptr->strings[index], line);
-		index++;
-	}
-	
-*/
 	while(fgets(ptr->strings[i],LSIZ, fp)){
 		ptr->strings[i][strlen(ptr->strings[i]) - 1] = '\0';
 		i++;
@@ -159,26 +140,6 @@ int main(int argc, char **argv){
 
 
 
-
-
-
-
-
-
-/*	
-	// detach from memory segment
-	int detach = shmdt(ptr);
-	if (detach == -1){
-		perror("Failed to detach shared memory segment");
-		return 1;
-	}
-	
-	int delete_mem = shmctl(shm_id, IPC_RMID, NULL);
-	if (delete_mem == -1){
-		perror("Failed to remove shared memory segment");
-		return 1;
-	}
-*/	
 	return 1;
 }
 
@@ -202,4 +163,16 @@ void free_shared_mem(){
                 perror("Failed to remove shared memory segment");
                 return 1;
         }
+}
 
+
+
+int create_sch_id(){
+	// returns the identifier of the System V shared memory segment associated with the value of the argument key
+	int shm_id = shmget(key, sizeof(shared_memory), PERMS | IPC_CREAT | IPC_EXCL);
+	if (shm_id == -1) {
+	perror("Failed to create shared memory segment");
+				return 1;
+        }
+	return sch_id;		
+}
