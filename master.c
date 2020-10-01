@@ -42,7 +42,10 @@ int main(int argc, char **argv){
 	
 	// attaches the System V shared memory segment identified by shmid to the address space of the calling process
 	shared_memory* ptr = (shared_memory*)shmat(shm_id, NULL, 0);
-
+	if (ptr == (void*)-1) {
+		perror("Failed to attach shared memory segment");
+		return 1;
+	}
 
 	//getopts
 	while((options = getopt(argc, argv, "hn:s:t:")) != -1){
@@ -89,9 +92,11 @@ int main(int argc, char **argv){
 	
 	fclose(fp);
 	// print arguments and array from file
+	index = 0;
 	int size = sizeof(ptr->strings);
-	for(int i; i < size; i++){
-		printf("%s ", ptr->strings[i]);
+	while(index < size){
+		printf("%s ", ptr->strings[index]);
+		index
 	}
 	
 	return 1;
