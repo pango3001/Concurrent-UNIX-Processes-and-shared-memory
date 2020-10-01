@@ -26,7 +26,8 @@
 
 //========== PROTOTYPES ==========
 void run_child(int id);
-void free_shared_mem();
+int free_shared_mem();
+void signal_handle(int signal);
 
 // structure for the shared memory
 typedef struct{
@@ -35,32 +36,33 @@ typedef struct{
 	char strings[64][64]; // array of strings
 } shared_memory;
 
-
-// key for shared memory
-unsigned int key = ftok("./master", 'a');
-
-// returns the identifier of the System V shared memory segment associated with the value of the argument key
-int shm_id = shmget(key, sizeof(shared_memory), PERMS | IPC_CREAT | IPC_EXCL);
-if (shm_id == -1) {
-perror("Failed to create shared memory segment");
-			return 1;
-	}
-return sch_id;
-
-// attaches the System V shared memory segment identified by shmid to the address space of the calling process
-shared_memory* ptr = (shared_memory*) shmat(shm_id, NULL, 0);
-if (ptr == (void*)-1) {
-	perror("Failed to attach shared memory segment");
-	return 1;
-}
-
-
-
+shared_memory* ptr; // pointer to shared memory
+int shm_id; // segment id
 
 
 
 //=========== MAIN ============
 int main(int argc, char **argv){	
+	signal(SIGINT, signal_handle);
+	// key for shared memory
+	unsigned int key = ftok("./master", 'a');
+	
+		
+	// returns the identifier of the System V shared memory segment associated with the value of the argument key
+	shm_id = shmget(key, sizeof(shared_memory), PERMS | IPC_CREAT | IPC_EXCL);
+	if (shm_id == -1) {
+	        perror("Failed to create shared memory segment");
+        	return 1;
+	}
+
+	// attaches the System V shared memory segment identified by shmid to the address space of the calling process
+	ptr = (shared_memory*) shmat(shm_id, NULL, 0);
+	if (ptr == (void*)-1) {
+        	perror("Failed to attach shared memory segment");
+                return 1;
+        }
+	
+
 	unsigned int options;
 	unsigned int max_childs_master = 4; // maximum total of child processes master will ever create
 	unsigned int max_total_childs = 2; // number of children allowed to exist in the system at once
@@ -127,20 +129,33 @@ int main(int argc, char **argv){
 
 
 	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	// SCARY PART
+	//
+	//
 
 
 	index = 0;
- 	while(index < total){
+	
+	//run_child(index);
+	index++;
+
+	int pid = fork();
+
+	if(pid == 0){
 		run_child(index);
-		index++;
+		exit(1);
 	}
+	int status;
+    	waitpid(pid, &status, 0);
+	index++;
+	
 
 
 
 
 
 
-
+	free_shared_mem();
 
 	return 1;
 }
@@ -165,5 +180,11 @@ int free_shared_mem(){
                 perror("Failed to remove shared memory segment");
                 return 1;
         }
-	return 1
+	return 1;
+}
+
+void signal_handle(int signal){
+	//TODO kill children
+	
+	free_shared_mem();
 }
