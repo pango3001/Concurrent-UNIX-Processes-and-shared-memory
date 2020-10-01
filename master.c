@@ -19,6 +19,8 @@
 #include <string.h>
 #include <time.h>
 
+#define PERM (S_IRUSR | S_IWUSR)
+
 //=========== MAIN ============
 int main(int argc, char **argv){
 	unsigned int key = 63376;
@@ -80,7 +82,7 @@ int main(int argc, char **argv){
 		return(-1);
 	}
 	int index = 0;
-	char line[LENGTH];
+	char line[256];
 	while (fgets(line, sizeof(line), fp)){
 		line[strlen(line) - 1] = '\0';
 		strcpy(ptr->strings[i], line);
@@ -89,7 +91,7 @@ int main(int argc, char **argv){
 	
 	fclose(fp);
 	// print arguments and array from file
-	for(int i; i < size(ptr->strings); i++){
+	for(int i; i < sizeof(ptr->strings); i++){
 		printf("%s ", ptr->strings[i]);
 	}
 	
