@@ -102,8 +102,22 @@ int main(int argc, char **argv){
 	int size = sizeof(ptr->strings);
 	while(index < size){
 		printf("%s ", ptr->strings[index]);
-		index;
+		index++;
 	}
+	
+	// detach from memory segment
+	int detach = shmdt(ptr);
+	if (detach == -1){
+		perror("Failed to detach shared memory segment");
+		return 1;
+	}
+	
+	int delete_mem = shmctl(shm_id, IPC_RMID, NULL);
+	if (delete_mem == -1){
+		perror("Failed to remove shared memory segment");
+		return 1;
+	}
+	
 	
 	return 1;
 }
