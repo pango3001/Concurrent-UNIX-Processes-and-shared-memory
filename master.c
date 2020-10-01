@@ -104,7 +104,7 @@ int main(int argc, char **argv){
 	int size = sizeof(ptr->strings);
 	while(index < size){
 		printf("here2");
-		printf("%s ", ptr->strings[index]);
+		printf("%s \n", ptr->strings[index]);
 		index++;
 	}
 	
