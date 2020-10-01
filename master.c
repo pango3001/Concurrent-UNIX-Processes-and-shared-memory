@@ -96,11 +96,14 @@ int main(int argc, char **argv){
 		index++;
 	}
 	
+	printf("here");
+	
 	fclose(fp);
 	// print arguments and array from file
 	index = 0;
 	int size = sizeof(ptr->strings);
 	while(index < size){
+		printf("here2");
 		printf("%s ", ptr->strings[index]);
 		index++;
 	}
