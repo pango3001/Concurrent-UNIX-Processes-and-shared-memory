@@ -19,7 +19,10 @@
 #include <time.h>
 #include <stdbool.h>
 
-#define PERM (S_IRUSR | S_IWUSR)
+#define PERMS (S_IRUSR | S_IWUSR)
+
+void signal_handle(int signal);
+
 
 bool isPalindrome(char str[]);
 
@@ -39,7 +42,7 @@ int main(int argc, char ** argv){
 	
 	unsigned int key = ftok("./master", 'a');	
 
-	int shm_id = shmget(key, sizeof(shared_memory), PERM | IPC_CREAT);
+	int shm_id = shmget(key, sizeof(shared_memory), PERMS | IPC_CREAT);
 	if (shm_id == -1) {
 		perror("Failed to find shared memory segment");
 		return 1;
@@ -96,3 +99,9 @@ bool isPalindrome(char str[]) {
 	return true; 
 }
 
+void signal_handle(int signal){
+	if (signal == SIGTERM) {
+		printf("Message: Ctrl+c in child caught!\n");
+		exit(1);
+	}
+}
