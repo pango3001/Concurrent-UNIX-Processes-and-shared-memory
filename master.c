@@ -34,7 +34,11 @@ int main(int argc, char **argv){
 	typedef struct{
 	int id;
 	int key_t;  //key_t key;
+<<<<<<< HEAD
 	char strings[64][64]; // array of strings
+=======
+	char strings[128][256]; // array of strings
+>>>>>>> 27ef8e9891db454c3e672f6ba518b947308bb164
 	} shared_memory;
 	
 	
@@ -98,6 +102,17 @@ int main(int argc, char **argv){
 	printf("here");
 	
 	fclose(fp);
+<<<<<<< HEAD
+=======
+	// print arguments and array from file
+	index = 0;
+	int size = sizeof(ptr->strings);
+	while(index < size){
+		printf("here2");
+		printf("%s \n", ptr->strings[index]);
+		index++;
+	}
+>>>>>>> 27ef8e9891db454c3e672f6ba518b947308bb164
 	
 	// detach from memory segment
 	int detach = shmdt(ptr);
