@@ -39,6 +39,10 @@ int main(int argc, char **argv){
 	
 	// returns the identifier of the System V shared memory segment associated with the value of the argument key
 	int shm_id = shmget(key, sizeof(shared_memory), PERM | IPC_CREAT | IPC_EXCL);
+	if (shm_id == -1) {
+		perror("Failed to create shared memory segment");
+		return 1;
+	}
 	
 	// attaches the System V shared memory segment identified by shmid to the address space of the calling process
 	shared_memory* ptr = (shared_memory*)shmat(shm_id, NULL, 0);
@@ -96,7 +100,7 @@ int main(int argc, char **argv){
 	int size = sizeof(ptr->strings);
 	while(index < size){
 		printf("%s ", ptr->strings[index]);
-		index
+		index;
 	}
 	
 	return 1;
