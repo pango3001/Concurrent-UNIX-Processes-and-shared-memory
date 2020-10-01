@@ -37,7 +37,7 @@ int main(int argc, char ** argv){
 	shared_memory *ptr; // pointer for the shared memory
 
 	
-	unsigned int key = 63376;	
+	unsigned int key = ftok("./master", 'a');	
 
 	int shm_id = shmget(key, sizeof(shared_memory), PERM | IPC_CREAT);
 	if (shm_id == -1) {
@@ -46,24 +46,24 @@ int main(int argc, char ** argv){
 	}
 	
 	// attach shared memory segment
-	shared_memory* ptr = (shared_memory*)shmat(shm_id, NULL, 0);
+	ptr = (shared_memory*)shmat(shm_id, NULL, 0);
 	// shmat(segment_id, NULL, SHM_RDONLY) to attach to read only memory
 	if (ptr == (void*)-1) {
-		perror("Failed to attach existing shared memory segment");
+		perror("Failed to attach to shared memory segment");
 		return 1;
 	}
 
 	
 
-	bool palin = isPalindrome(argv[1]);
+	bool palin = isPalindrome(ptr->strings[id]);
 		
 
 
 	if(palin){
-		printf("%s is palin\n", argv[1]);
+		printf("%s is palin\n", ptr->strings[id]);
 	}
 	else{
-		printf("%s is not\n", argv[1]);
+		printf("%s is not\n", ptr->strings[id]);
 	}
 	
 

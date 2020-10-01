@@ -24,6 +24,9 @@
 #define RSIZ 32
 #define PERM (S_IRUSR | S_IWUSR)
 
+
+void run_child(int id);
+
 typedef struct{
 	int id;
 	int key_t;  //key_t key;
@@ -31,9 +34,25 @@ typedef struct{
 } shared_memory;
 
 
+
+unsigned int key = ftok("./master", 'a');// key for shared memory
+
+int shm_id = shmget(key, sizeof(shared_memory), PERM | IPC_CREAT | IPC_EXCL);
+if (shm_id == -1) {
+	perror("Failed to create shared memory segment");
+                return 1;
+        }
+
+
+
+
+
+
+
+
 //=========== MAIN ============
 int main(int argc, char **argv){
-	unsigned int key = 63376;
+	unsigned int key = ftok("./master", 'a');//Key generation for shared Mem
 	
 	unsigned int options;
 	unsigned int max_childs_master = 4; // maximum total of child processes master will ever create
@@ -121,7 +140,32 @@ int main(int argc, char **argv){
 		index++;
 	}
 
-	
+
+
+
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+	index = 0;
+ 	while(index < total){
+		run_child(index);
+		index++;
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*	
 	// detach from memory segment
 	int detach = shmdt(ptr);
 	if (detach == -1){
@@ -134,7 +178,28 @@ int main(int argc, char **argv){
 		perror("Failed to remove shared memory segment");
 		return 1;
 	}
-	
-	
+*/	
 	return 1;
 }
+
+
+void run_child(int id){
+        char buffer[256];
+        sprintf(buffer, "%d", id);
+        execl("./palin", "palin", buffer, (char*) NULL);
+}
+
+void free_shared_mem(){
+	//detatch from the shared memory segment
+	int detach = shmdt(ptr);
+        if (detach == -1){
+                perror("Failed to detach shared memory segment");
+                return 1;
+        }
+
+        int delete_mem = shmctl(shm_id, IPC_RMID, NULL);
+        if (delete_mem == -1){
+                perror("Failed to remove shared memory segment");
+                return 1;
+        }
+
