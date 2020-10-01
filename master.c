@@ -34,9 +34,7 @@ int main(int argc, char **argv){
 	int id;
 	int key_t;  //key_t key;
 	char strings[256][256]; // array of strings
-	};
-	
-	struct Shared_mem shared_memory;
+	} shared_memory;
 	
 	
 	// returns the identifier of the System V shared memory segment associated with the value of the argument key
@@ -85,13 +83,14 @@ int main(int argc, char **argv){
 	char line[256];
 	while (fgets(line, sizeof(line), fp)){
 		line[strlen(line) - 1] = '\0';
-		strcpy(ptr->strings[i], line);
+		strcpy(ptr->strings[index], line);
 		index++;
 	}
 	
 	fclose(fp);
 	// print arguments and array from file
-	for(int i; i < sizeof(ptr->strings); i++){
+	int size = sizeof(ptr->strings);
+	for(int i; i < size; i++){
 		printf("%s ", ptr->strings[i]);
 	}
 	
