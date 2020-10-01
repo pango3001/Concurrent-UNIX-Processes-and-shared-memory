@@ -34,7 +34,7 @@ int main(int argc, char **argv){
 	typedef struct{
 	int id;
 	int key_t;  //key_t key;
-	char strings[256][256]; // array of strings
+	char strings[128][256]; // array of strings
 	} shared_memory;
 	
 	
