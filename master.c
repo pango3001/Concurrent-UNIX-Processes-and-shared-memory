@@ -14,6 +14,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/ipc.h>
+#include <sys/wait.h>
 #include <getopt.h>
 #include <errno.h>
 #include <signal.h>
@@ -138,16 +139,26 @@ int main(int argc, char **argv){
 	
 	//run_child(index);
 	index++;
-
+	int result;
+	int status;
 	int pid = fork();
 
-	if(pid == 0){
-		run_child(1);
-		exit(1);
+	while(index < total){
+		int pid = fork();	
+		if(pid == 0){
+			sleep(1);
+			run_child(index);
+			exit(1);
+		}
+		else if (pid > 0){
+			wait(&status);
+			//result=WEXITSTATUS(;
+		}
+		index++;
 	}
-	int status;
-    	waitpid(pid, &status, 0);
-	index++;
+	//int status;
+    	//waitpid(pid, &status, 0);
+	//index++;
 	
 
 
