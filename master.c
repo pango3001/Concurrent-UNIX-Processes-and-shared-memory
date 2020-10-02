@@ -115,10 +115,15 @@ int main(int argc, char **argv){
 	}
 	
 	
-
+	// max child processes cannot exceed total processes called
 	if (max_total_childs > max_childs_master){
 		max_total_childs = max_childs_master;
 	}
+
+	if((max_total_childs | max_childs_master | max_time) == 0){
+		return EXIT_FAILURE;
+	}		
+
 
 
 
@@ -191,7 +196,7 @@ int main(int argc, char **argv){
 // checks if there is too many processes already running
 void run_child(int id){
 //	printf("Trying to run child... Processes: %d < MTC: %d && ID: %d < MCM: %d", processes, max_total_childs, id, max_childs_master);
-	if((processes < max_total_childs) && (id < max_childs_master)){
+	if(((processes < max_total_childs) && (id < max_childs_master))|| ((max_total_childs == 1) && (id < max_childs_master))){
 //		printf(" true!\n");
 		run(id);
 	}
@@ -235,6 +240,8 @@ int free_shared_mem(){
         }
 	return 1;
 }
+
+// finds the minimum
 int min(int a, int b) {
 	if (a > b)
 		return b;
