@@ -52,9 +52,9 @@ typedef struct{
 shared_memory* ptr; // pointer to shared memory
 unsigned int shm_id; // segment id
 unsigned int status = 0;
-unsigned int max_childs_master = 4; // maximum total of child processes master will ever create
-unsigned int max_total_childs = 2; // number of children allowed to exist in the system at once
-unsigned int max_time = 100; //time in seconds after which the process will terminate
+int max_childs_master = 4; // maximum total of child processes master will ever create
+int max_total_childs = 2; // number of children allowed to exist in the system at once
+int max_time = 100; //time in seconds after which the process will terminate
 unsigned int processes = 0; // process counter
 unsigned int ind;
 
@@ -66,22 +66,6 @@ int main(int argc, char **argv){
 	
 	// key for shared memory
 	unsigned int key = ftok("./master", 'a');
-	
-		
-	// returns the identifier of the System V shared memory segment associated with the value of the argument key
-	shm_id = shmget(key, sizeof(shared_memory), PERMS | IPC_CREAT | IPC_EXCL);
-	if (shm_id == -1) {
-	        perror("Failed to create shared memory segment");
-        	return 1;
-	}
-	
-	// attaches the System V shared memory segment identified by shmid to the address space of the calling process
-	ptr = (shared_memory*) shmat(shm_id, NULL, 0);
-	if (ptr == (void*)-1) {
-        	perror("Failed to attach shared memory segment TEST");
-                return 1;
-        }
-	
 
 	unsigned int options;
 
@@ -101,18 +85,44 @@ int main(int argc, char **argv){
 				if(max_childs_master > 20){
 					max_childs_master = 20; // hard limit for total child running at once
 				}
+				if(max_total_childs <= 0){
+					printf("n cannot be <= 0.\nERROR: use option -h for help.\n");
+					return EXIT_FAILURE;
+				}
 				break;
 			case 's':
 				max_total_childs = atoi(optarg); // argument replaces default
+				if(max_total_childs <= 0){
+					printf("s cannot be <= 0.\nERROR: use option -h for help.\n");
+					return EXIT_FAILURE;
+				}
 				break;
 			case 't':
 				max_time = atoi(optarg); // argument replaces default
+				if(max_time <= 0){
+					printf("t cannot be <= 0.\nERROR: use option -h for help.\n");
+					return EXIT_FAILURE;
+				}
 				break;
 			default:
 				printf("ERROR: use option -h for help.\n");
 				return EXIT_FAILURE;
 		}
 	}
+	
+	// returns the identifier of the System V shared memory segment associated with the value of the argument key
+	shm_id = shmget(key, sizeof(shared_memory), PERMS | IPC_CREAT | IPC_EXCL);
+	if (shm_id == -1) {
+	        perror("Failed to create shared memory segment");
+        	return 1;
+	}
+	
+	// attaches the System V shared memory segment identified by shmid to the address space of the calling process
+	ptr = (shared_memory*) shmat(shm_id, NULL, 0);
+	if (ptr == (void*)-1) {
+        	perror("Failed to attach shared memory segment TEST");
+                return 1;
+    }
 	
 	
 	// max child processes cannot exceed total processes called

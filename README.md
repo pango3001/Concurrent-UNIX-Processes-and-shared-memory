@@ -2,9 +2,8 @@
 CS 4760 Assignment 2 - Concurrent UNIX Processes and shared memory
 
 NOTES
++perror used
 
-
-DONE//
 +palindrome function works
 
 +shared memory works
@@ -19,11 +18,18 @@ DONE//
 
 +fork and execl works
 
++timer option implemented.
+
++critical section implemented.
+
+DONE
 
 
 TODO//
--timer option implemented in getopts but not in rest of code.
+Nothing, all possible edge cases tested. 
+in case of program failure "ipcrm -a" may need to be called
+if problems persists "pkill -u $USER" may also need to be called
 
--critical section not implemented correctly yet.
 
--ctrl+c occasionally must be pressed multiple times in order to work
+
+
