@@ -127,6 +127,7 @@ int main(int argc, char ** argv){
 	//-=-=-=-=-=-=-=-=- CRITICAL SECTION -=-=-=-=-=-=-=-=-	
 	
 
+
 	printf("Process ID: %d, PID: %d has entered critical section\n", id, getpid());
 	
 	// writing to output files
