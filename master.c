@@ -20,6 +20,7 @@
 #include <signal.h>
 #include <string.h>
 #include <time.h>
+#include <stdbool.h>
 
 #define LSIZ 128 
 #define RSIZ 32
@@ -35,11 +36,13 @@ int min(int a, int b);
 
 
 
-// structure for the shared memory
+// structure for the shared memory	
 typedef struct{
-	unsigned int id;
-	unsigned int key_t;
-	char strings[64][64]; // array of strings
+        unsigned int id;
+        unsigned int turn;
+        unsigned int children; //amount of child processes
+        unsigned int flags[20];  // state of using critical section
+        char strings[64][64]; // array of strings
 } shared_memory;
 
 shared_memory* ptr; // pointer to shared memory
@@ -153,7 +156,7 @@ int main(int argc, char **argv){
 	ind =  0;
 	int time_start = time(0);
 	
-
+	ptr->children = max_childs_master;
 		
 	while(ind < max_total_childs){
 		run_child(ind++);
@@ -173,7 +176,7 @@ int main(int argc, char **argv){
 	return 1;
 }
 
-
+// checks if there is too many processes already running
 void run_child(int id){
 	printf("Trying to run child... Processes: %d < MTC: %d && ID: %d < MCM: %d", processes, max_total_childs, id, max_childs_master);
 	if((processes < max_total_childs) && (id < max_childs_master)){
@@ -185,17 +188,16 @@ void run_child(int id){
 		ind--;
 	}
 }
-
+// this function fork and execl to palin
 void run(int id){ 
 	processes++;
 	pid_t pid;
 	pid = fork();
 	if(pid == 0){
-	 	if(id == 1){
+	 	if(id == 0){
 	 		(*children) = getpid();
 	 	}
-	 	setpgid(0, (*children));
-	
+	setpgid(0, (*children));
 	char buffer[256];
         sprintf(buffer, "%d", id);
         sleep(1);
@@ -229,6 +231,10 @@ int min(int a, int b) {
 
 void signal_handle(int signal){
 	//TODO kill children
+	killpg((*children), SIGTERM);
+
+	while (wait(NULL) > 0);
+
 	
 	free_shared_mem();
 }

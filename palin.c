@@ -28,8 +28,10 @@ bool isPalindrome(char str[]);
 
 
 typedef struct{
-	int id;
-        int key_t;  //key_t key;
+	unsigned int id;
+	unsigned int turn;
+	unsigned int children; //amount of child processes 
+        unsigned int flags[20];  // state of using critical section
         char strings[64][64]; // array of strings
 } shared_memory;
 shared_memory *ptr; // pointer for the shared memory
@@ -37,9 +39,9 @@ int shm_id;
 
 
 int main(int argc, char ** argv){
-	
+	//ptr->in_critical = false;
 	printf("Palin Starting...\n");
-	signal(SIGINT,signal_handle);
+	signal(SIGINT, signal_handle);
 	int id = atoi(argv[1]);
 
 	 	
@@ -64,21 +66,65 @@ int main(int argc, char ** argv){
 
 	bool palin = isPalindrome(ptr->strings[id]);
 
-
-
-	time_t t;		
-	srand((unsigned) time(&t)); // seed for random sleep time
-	sleep(rand() % (3)); // sleep between 0-2 seconds
-
+	/*
+	// used for debugging
 	if(palin){
 		printf("%s is palin\n", ptr->strings[id]);
 	}
 	else{
 		printf("%s is not\n", ptr->strings[id]);
 	}
+	*/
+
+
+	//--------------- Waiting Room for Crit Sect -------------------
+	printf("Process ID: %d, PID: %d wants into critical section\n", id, getpid());
+	int N = ptr->children;
+	printf("N = %d\n", N);
+	enum state {idle, want_in, in_cs};
+	int j;
+	do{
+		ptr->flags[id] = want_in;	
+		j = ptr->turn;
+		printf("here 1\n");	
+		while(j != id){
+			j = (ptr->flags[j] != idle) ? ptr->turn : (j + 1) % N;
+		}
+		printf("here 2\n");
+
+		
+		ptr->flags[id] = in_cs;
+
+		//check that no-one else is in critical section
+		int k = 0;
+		while(k < ptr->children){
+			if((k != id) && (ptr->flags[k] == in_cs)){
+				break;
+			}
+			printf("here 3\n");
+
+			k++;
+		}
+		printf("here 4\n");
+
+		
+	} while( (j < N) || ((ptr->turn != id) && (ptr->flags[ptr->turn] != idle)) );
+	ptr->turn = id;
+	
 	
 
 	
+
+	// SLEEP BETWEEN 0-2 SECONDS -------------------------
+	time_t t;
+        srand((unsigned) time(&t)); // seed for random sleep time
+        sleep(rand() % (3)); // sleep between 0-2 seconds
+
+	
+	//-=-=-=-=-=-=-=-=- CRITICAL SECTION -=-=-=-=-=-=-=-=-	
+	
+
+	printf("Process ID: %d, PID: %d has entered critical section\n", id, getpid());
 	
 	// writing to output files
 	FILE *file_a = fopen(palin ? "palin.out" : "nopalin.out", "a+"); // a+ appends
@@ -98,11 +144,18 @@ int main(int argc, char ** argv){
 
 	fclose(file_b);
 	
+	printf("Process ID: %d, PID: %d has exited critical section\n", id, getpid());	
 	
+	// ------------------------------------------------------------------------
+	ptr->turn = (ptr->turn + 1) % ptr->children;
+	
+	while(ptr->flags[ptr->turn] == idle){
+		ptr->turn = (ptr->turn + 1) % ptr->children;
+	}
 
+	//s->turn = j;
 
-
-
+	ptr->flags[id] = idle;
 
 	// FOR TESTING SIGNAL CATCH INFINTIE LOOP
 	//while(true){
