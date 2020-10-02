@@ -2,6 +2,14 @@
 CS 4760 Assignment 2 - Concurrent UNIX Processes and shared memory
 
 NOTES
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+Perform a make clean before running of master. 
+This will clean up the output files nopalin.out palin.out and output.log
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+SPECIAL NOTES
 +perror used
 
 +palindrome function works

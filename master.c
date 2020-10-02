@@ -85,7 +85,7 @@ int main(int argc, char **argv){
 				if(max_childs_master > 20){
 					max_childs_master = 20; // hard limit for total child running at once
 				}
-				if(max_total_childs <= 0){
+				if(max_childs_master <= 0){
 					printf("n cannot be <= 0.\nERROR: use option -h for help.\n");
 					return EXIT_FAILURE;
 				}
@@ -130,10 +130,6 @@ int main(int argc, char **argv){
 		max_total_childs = max_childs_master;
 	}
 
-	if((max_total_childs | max_childs_master | max_time) == 0){
-		return EXIT_FAILURE;
-	}		
-
 
 
 
@@ -146,7 +142,7 @@ int main(int argc, char **argv){
 	}
 	int i = 0;
 
-
+	//get length of array for strings
 	while(fgets(ptr->strings[i],LSIZ, fp)){
 		ptr->strings[i][strlen(ptr->strings[i]) - 1] = '\0';
 		i++;
