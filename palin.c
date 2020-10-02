@@ -38,7 +38,7 @@ int shm_id;
 
 int main(int argc, char ** argv){
 	
-	printf("test\n");
+	printf("Palin Starting...\n");
 	signal(SIGINT,signal_handle);
 	int id = atoi(argv[1]);
 
@@ -110,7 +110,7 @@ int main(int argc, char ** argv){
 	//	sleep(1);
 	//}
 
-
+	printf("Palin Finished!\n");
 	return 0;
 }
 

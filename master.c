@@ -38,7 +38,7 @@ int min(int a, int b);
 // structure for the shared memory
 typedef struct{
 	unsigned int id;
-	unsigned int key_t;  //key_t key;
+	unsigned int key_t;
 	char strings[64][64]; // array of strings
 } shared_memory;
 
@@ -50,8 +50,7 @@ unsigned int max_childs_master = 4; // maximum total of child processes master w
 unsigned int max_total_childs = 2; // number of children allowed to exist in the system at once
 unsigned int max_time = 100; //time in seconds after which the process will terminate
 unsigned int processes = 0; // process counter
-
-
+unsigned int ind;
 
 
 
@@ -129,11 +128,11 @@ int main(int argc, char **argv){
 
 
 	// print arguments and array from file
-	int index = 0;
+	unsigned int index = 0;
 	int size = sizeof(ptr->strings);
 	while(index < total){
-		printf("Line %d: ", (index + 1));
-		printf("%s \n", ptr->strings[index]);
+		//printf("Line %d: ", (index + 1));
+		//printf("%s \n", ptr->strings[index]);
 		index++;
 	}
 
@@ -151,20 +150,24 @@ int main(int argc, char **argv){
 	int j = n;
 	int nn = n;  
 	
-	index = 0;
+	ind =  0;
 	int time_start = time(0);
-		
-	while(index < s){
-		run_child(index++);
-	}
-	while(nn > 0){
-		wait(NULL);
-		if(i < j){
-			run_child(index++);
-		}
-		nn--;
-	}
+	
 
+		
+	while(ind < max_total_childs){
+		run_child(ind++);
+		;
+	}
+	while(processes > 0){
+		wait(NULL);
+		if(ind < j){
+			run_child(ind++);
+		}
+		processes--;
+		
+	}
+	
 	free_shared_mem();
 
 	return 1;
@@ -172,32 +175,37 @@ int main(int argc, char **argv){
 
 
 void run_child(int id){
+	printf("Trying to run child... Processes: %d < MTC: %d && ID: %d < MCM: %d", processes, max_total_childs, id, max_childs_master);
 	if((processes < max_total_childs) && (id < max_childs_master)){
+		printf(" true!\n");
 		run(id);
 	}
-	//else{
-	//	waitpid(-(*children), &status, 0);
-	//	--;
-	//	run(id);
-	//}
-
+	else{ 
+		printf(" false!\n");
+		ind--;
+	}
 }
 
 void run(int id){ 
 	processes++;
-	if(fork() == 0){
+	pid_t pid;
+	pid = fork();
+	if(pid == 0){
 	 	if(id == 1){
 	 		(*children) = getpid();
 	 	}
 	 	setpgid(0, (*children));
-	}
+	
 	char buffer[256];
         sprintf(buffer, "%d", id);
-        execl("./palin", "palin", buffer, (char*) NULL);
+        sleep(1);
+	execl("./palin", "palin", buffer, (char*) NULL);
 	exit(1);
+	}
 }
 
 int free_shared_mem(){
+	printf("Cleaning up shared memory...\n");
 	//detatch from the shared memory segment
 	int detach = shmdt(ptr);
         if (detach == -1){
