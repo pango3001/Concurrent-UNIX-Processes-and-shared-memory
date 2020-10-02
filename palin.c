@@ -63,8 +63,12 @@ int main(int argc, char ** argv){
 	//printf("child argument: %d ,string %s",id, ptr->strings[id]);
 
 	bool palin = isPalindrome(ptr->strings[id]);
-		
 
+
+
+	time_t t;		
+	srand((unsigned) time(&t)); // seed for random sleep time
+	sleep(rand() % (3)); // sleep between 0-2 seconds
 
 	if(palin){
 		printf("%s is palin\n", ptr->strings[id]);
@@ -74,7 +78,8 @@ int main(int argc, char ** argv){
 	}
 	
 
-
+	
+	
 	// writing to output files
 	FILE *file_a = fopen(palin ? "palin.out" : "nopalin.out", "a+"); // a+ appends
 	if(file_a == NULL){

@@ -27,18 +27,31 @@
 
 //========== PROTOTYPES ==========
 void run_child(int id);
+void run(int id);
 int free_shared_mem();
 void signal_handle(int signal);
+int min(int a, int b);
+
+
+
 
 // structure for the shared memory
 typedef struct{
-	int id;
-	int key_t;  //key_t key;
+	unsigned int id;
+	unsigned int key_t;  //key_t key;
 	char strings[64][64]; // array of strings
 } shared_memory;
 
 shared_memory* ptr; // pointer to shared memory
-int shm_id; // segment id
+unsigned int shm_id; // segment id
+pid_t* children; // child processes pointer
+unsigned int status = 0;
+unsigned int max_childs_master = 4; // maximum total of child processes master will ever create
+unsigned int max_total_childs = 2; // number of children allowed to exist in the system at once
+unsigned int max_time = 100; //time in seconds after which the process will terminate
+
+
+
 
 
 
@@ -55,7 +68,8 @@ int main(int argc, char **argv){
 	        perror("Failed to create shared memory segment");
         	return 1;
 	}
-
+	children = (pid_t *) shmat(shm_id, NULL, 0);
+	
 	// attaches the System V shared memory segment identified by shmid to the address space of the calling process
 	ptr = (shared_memory*) shmat(shm_id, NULL, 0);
 	if (ptr == (void*)-1) {
@@ -65,9 +79,6 @@ int main(int argc, char **argv){
 	
 
 	unsigned int options;
-	unsigned int max_childs_master = 4; // maximum total of child processes master will ever create
-	unsigned int max_total_childs = 2; // number of children allowed to exist in the system at once
-	unsigned int max_time = 100; //time in seconds after which the process will terminate
 
 
 	//getopts
@@ -133,37 +144,31 @@ int main(int argc, char **argv){
 	// IDK PART
 	//
 	//
-
+	
+	int n = min(total, max_childs_master); // total max processes allowed
+	int s = min(max_total_childs, n); // number of processes in system
+	
+	int j = n;
+	int nn = n;  
+	
+	
 
 	index = 0;
-	
-	//run_child(index);
-	index++;
-	int result;
-	int status;
-	int pid = fork();
-
-	while(index < total){
-		int pid = fork();	
-		if(pid == 0){
-			sleep(1);
-			run_child(index);
-			exit(1);
-		}
-		else if (pid > 0){
-			wait(&status);
-			//result=WEXITSTATUS(;
-		}
-		index++;
+	int time_start = time(0);
+		
+	while(index < s){
+		run_child(index++);
 	}
-	//int status;
-    	//waitpid(pid, &status, 0);
-	//index++;
+	while(nn > 0){
+		wait(NULL);
+		if(i < j){
+			run_child(index++);
+		}
+		nn--;
+	}
 	
-
-
-
-
+    	
+	
 
 
 	free_shared_mem();
@@ -173,9 +178,29 @@ int main(int argc, char **argv){
 
 
 void run_child(int id){
-        char buffer[256];
+	if(max_childs_master < max_total_childs){
+		run(id);
+	}
+	else{
+		waitpid(-(*children), &status, 0);
+		max_childs_master--;
+		run(id);
+	}
+
+}
+
+void run(int id){ 
+	max_childs_master++;
+	if(fork() == 0){
+	 	if(id == 1){
+	 		(*children) = getpid();
+	 	}
+	 	setpgid(0, (*children));
+	}
+	char buffer[256];
         sprintf(buffer, "%d", id);
         execl("./palin", "palin", buffer, (char*) NULL);
+	exit(1);
 }
 
 int free_shared_mem(){
@@ -193,6 +218,11 @@ int free_shared_mem(){
                 return 1;
         }
 	return 1;
+}
+int min(int a, int b) {
+	if (a > b)
+		return b;
+	return a;
 }
 
 void signal_handle(int signal){
