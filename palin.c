@@ -23,6 +23,7 @@
 
 void signal_handle(int signal);
 int free_shared_mem();
+void timer(int signal);
 
 bool isPalindrome(char str[]);
 
@@ -42,7 +43,8 @@ int shm_id;
 int main(int argc, char ** argv){
 	//ptr->in_critical = false;
 //	printf("Palin Starting...\n");
-	signal(SIGINT, signal_handle);
+	signal(SIGTERM, signal_handle);
+	signal(SIGUSR1, timer);
 	int id = atoi(argv[1]);
 //	printf("id: %d\n", id);
 //	return 0;
@@ -186,6 +188,10 @@ bool isPalindrome(char str[]) {
 
 void signal_handle(int signal){
 	printf("\nMessage: Ctrl+c in child caught!\n");
+	exit(1);
+}
+
+void timer(int signal){
 	exit(1);
 }
 

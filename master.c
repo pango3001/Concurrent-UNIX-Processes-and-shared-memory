@@ -15,6 +15,7 @@
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/wait.h>
+#include <sys/time.h>
 #include <getopt.h>
 #include <errno.h>
 #include <signal.h>
@@ -31,6 +32,8 @@ void run_child(int id);
 void run(int id);
 int free_shared_mem();
 void signal_handle(int signal);
+void alarm_timer (int seconds);
+void timer_interupt(int signal);
 int min(int a, int b);
 
 
@@ -60,6 +63,7 @@ unsigned int ind;
 //=========== MAIN ============
 int main(int argc, char **argv){	
 	signal(SIGINT, signal_handle);
+	
 	// key for shared memory
 	unsigned int key = ftok("./master", 'a');
 	
@@ -110,6 +114,14 @@ int main(int argc, char **argv){
 		}
 	}
 	
+	
+
+	if (max_total_childs > max_childs_master){
+		max_total_childs = max_childs_master;
+	}
+
+
+
 	//read file and write contents to array
 	FILE *fp = fopen(argv[optind], "r");
 	// file read error
@@ -139,12 +151,13 @@ int main(int argc, char **argv){
 	}
 
 
-
+	alarm_timer(max_time);
 
 	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	// IDK PART
 	//
 	//
+	
 	
 	int n = min(total, max_childs_master); // total max processes allowed
 	int s = min(max_total_childs, n); // number of processes in system
@@ -153,7 +166,7 @@ int main(int argc, char **argv){
 	int nn = n;  
 	
 	ind =  0;
-	int time_start = time(0);
+	
 	
 	ptr->children = max_childs_master;
 		
@@ -229,11 +242,45 @@ int min(int a, int b) {
 }
 
 void signal_handle(int signal){
-	//TODO kill children
+	// kill children
 	killpg(ptr->pgid, SIGTERM);
-
+	// wait for children to end
 	while (wait(NULL) > 0);
-
 	
 	free_shared_mem();
+	exit(1);
 }
+// code from gnu.org
+void alarm_timer (int seconds){
+        struct sigaction sa;
+        sigemptyset(&sa.sa_mask);
+        sa.sa_handler = &timer_interupt;
+        sa.sa_flags = 0;
+	if (sigaction(SIGALRM, &sa, NULL) < 0) {
+		perror("");
+		exit(1);
+	}
+
+	struct itimerval new;
+	new.it_interval.tv_usec = 0;
+	new.it_interval.tv_sec = 0;
+	new.it_value.tv_usec = 0;
+	new.it_value.tv_sec = (long int) seconds;
+	if (setitimer (ITIMER_REAL, &new, NULL) < 0){
+		perror("ERROR TIMER");
+		exit(1);
+	}
+}
+
+void timer_interupt(int signal){
+
+	killpg(ptr->pgid, SIGUSR1);
+        //wait for children to end
+	while (wait(NULL) > 0);
+        free_shared_mem();
+        exit(1);
+
+}
+
+
+
