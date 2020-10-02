@@ -33,6 +33,7 @@ typedef struct{
 	unsigned int children; //amount of child processes 
         unsigned int flags[20];  // state of using critical section
         char strings[64][64]; // array of strings
+	pid_t pgid;
 } shared_memory;
 shared_memory *ptr; // pointer for the shared memory
 int shm_id;
@@ -40,10 +41,11 @@ int shm_id;
 
 int main(int argc, char ** argv){
 	//ptr->in_critical = false;
-	printf("Palin Starting...\n");
+//	printf("Palin Starting...\n");
 	signal(SIGINT, signal_handle);
 	int id = atoi(argv[1]);
-
+//	printf("id: %d\n", id);
+//	return 0;
 	 	
 	unsigned int key = ftok("./master", 'a');	
 
@@ -80,34 +82,35 @@ int main(int argc, char ** argv){
 	//--------------- Waiting Room for Crit Sect -------------------
 	printf("Process ID: %d, PID: %d wants into critical section\n", id, getpid());
 	int N = ptr->children;
-	printf("N = %d\n", N);
+//	printf("N = %d\n", N);
 	enum state {idle, want_in, in_cs};
 	int j;
 	do{
 		ptr->flags[id] = want_in;	
 		j = ptr->turn;
-		printf("here 1\n");	
+//		printf("here 1\n");	
 		while(j != id){
 			j = (ptr->flags[j] != idle) ? ptr->turn : (j + 1) % N;
 		}
-		printf("here 2\n");
+//		printf("here 2\n");
 
 		
 		ptr->flags[id] = in_cs;
 
 		//check that no-one else is in critical section
-		int k = 0;
-		while(k < ptr->children){
-			if((k != id) && (ptr->flags[k] == in_cs)){
+//		int k = 0;
+//		while(k < ptr->children){
+//			if((k != id) && (ptr->flags[k] == in_cs)){
+//				break;
+//			}
+//			printf("here 3\n");
+//
+//			k++;
+//		}
+//		printf("here 4\n");
+		for (j = 0; j < N; j++)
+			if (j != id && ptr->flags[j] == in_cs)
 				break;
-			}
-			printf("here 3\n");
-
-			k++;
-		}
-		printf("here 4\n");
-
-		
 	} while( (j < N) || ((ptr->turn != id) && (ptr->flags[ptr->turn] != idle)) );
 	ptr->turn = id;
 	
@@ -140,17 +143,17 @@ int main(int argc, char ** argv){
         if(file_b == NULL){
               perror("FILE ERROR");
         }
-	fprintf(file_b, "PID: %d, Index: %d, String %s\n", pid, ptr->id, ptr->strings[id]); 
+	fprintf(file_b, "PID: %d, Index: %d, String %s\n", pid, id, ptr->strings[id]); 
 
 	fclose(file_b);
 	
 	printf("Process ID: %d, PID: %d has exited critical section\n", id, getpid());	
 	
 	// ------------------------------------------------------------------------
-	ptr->turn = (ptr->turn + 1) % ptr->children;
+	ptr->turn = (ptr->turn + 1) % N;
 	
 	while(ptr->flags[ptr->turn] == idle){
-		ptr->turn = (ptr->turn + 1) % ptr->children;
+		ptr->turn = (ptr->turn + 1) % N;
 	}
 
 	//s->turn = j;
@@ -163,7 +166,7 @@ int main(int argc, char ** argv){
 	//	sleep(1);
 	//}
 
-	printf("Palin Finished!\n");
+//	printf("Palin Finished!\n");
 	return 0;
 }
 

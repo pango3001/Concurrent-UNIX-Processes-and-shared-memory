@@ -43,11 +43,11 @@ typedef struct{
         unsigned int children; //amount of child processes
         unsigned int flags[20];  // state of using critical section
         char strings[64][64]; // array of strings
+	pid_t pgid;
 } shared_memory;
 
 shared_memory* ptr; // pointer to shared memory
 unsigned int shm_id; // segment id
-pid_t* children; // child processes pointer
 unsigned int status = 0;
 unsigned int max_childs_master = 4; // maximum total of child processes master will ever create
 unsigned int max_total_childs = 2; // number of children allowed to exist in the system at once
@@ -70,12 +70,11 @@ int main(int argc, char **argv){
 	        perror("Failed to create shared memory segment");
         	return 1;
 	}
-	children = (pid_t *) shmat(shm_id, NULL, 0);
 	
 	// attaches the System V shared memory segment identified by shmid to the address space of the calling process
 	ptr = (shared_memory*) shmat(shm_id, NULL, 0);
 	if (ptr == (void*)-1) {
-        	perror("Failed to attach shared memory segment");
+        	perror("Failed to attach shared memory segment TEST");
                 return 1;
         }
 	
@@ -160,15 +159,15 @@ int main(int argc, char **argv){
 		
 	while(ind < max_total_childs){
 		run_child(ind++);
-		;
 	}
+
 	while(processes > 0){
 		wait(NULL);
 		if(ind < j){
 			run_child(ind++);
 		}
 		processes--;
-		
+			
 	}
 	
 	free_shared_mem();
@@ -178,13 +177,13 @@ int main(int argc, char **argv){
 
 // checks if there is too many processes already running
 void run_child(int id){
-	printf("Trying to run child... Processes: %d < MTC: %d && ID: %d < MCM: %d", processes, max_total_childs, id, max_childs_master);
+//	printf("Trying to run child... Processes: %d < MTC: %d && ID: %d < MCM: %d", processes, max_total_childs, id, max_childs_master);
 	if((processes < max_total_childs) && (id < max_childs_master)){
-		printf(" true!\n");
+//		printf(" true!\n");
 		run(id);
 	}
 	else{ 
-		printf(" false!\n");
+//		printf(" false!\n");
 		ind--;
 	}
 }
@@ -195,9 +194,9 @@ void run(int id){
 	pid = fork();
 	if(pid == 0){
 	 	if(id == 0){
-	 		(*children) = getpid();
+			ptr->pgid = getpid();
 	 	}
-	setpgid(0, (*children));
+	setpgid(0, ptr->pgid);
 	char buffer[256];
         sprintf(buffer, "%d", id);
         sleep(1);
@@ -231,7 +230,7 @@ int min(int a, int b) {
 
 void signal_handle(int signal){
 	//TODO kill children
-	killpg((*children), SIGTERM);
+	killpg(ptr->pgid, SIGTERM);
 
 	while (wait(NULL) > 0);
 
