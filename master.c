@@ -129,7 +129,7 @@ int main(int argc, char **argv){
 
 
 	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-	// SCARY PART
+	// IDK PART
 	//
 	//
 
@@ -142,7 +142,7 @@ int main(int argc, char **argv){
 	int pid = fork();
 
 	if(pid == 0){
-		run_child(index);
+		run_child(1);
 		exit(1);
 	}
 	int status;
@@ -171,7 +171,8 @@ int free_shared_mem(){
 	//detatch from the shared memory segment
 	int detach = shmdt(ptr);
         if (detach == -1){
-                perror("Failed to detach shared memory segment");
+                //used for debugging
+		//perror("Failed to detach shared memory segment");
                 return 1;
         }
 
