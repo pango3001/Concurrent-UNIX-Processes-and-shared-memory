@@ -49,7 +49,7 @@ unsigned int status = 0;
 unsigned int max_childs_master = 4; // maximum total of child processes master will ever create
 unsigned int max_total_childs = 2; // number of children allowed to exist in the system at once
 unsigned int max_time = 100; //time in seconds after which the process will terminate
-
+unsigned int processes = 0; // process counter
 
 
 
@@ -151,8 +151,6 @@ int main(int argc, char **argv){
 	int j = n;
 	int nn = n;  
 	
-	
-
 	index = 0;
 	int time_start = time(0);
 		
@@ -166,10 +164,6 @@ int main(int argc, char **argv){
 		}
 		nn--;
 	}
-	
-    	
-	
-
 
 	free_shared_mem();
 
@@ -178,19 +172,19 @@ int main(int argc, char **argv){
 
 
 void run_child(int id){
-	if(max_childs_master < max_total_childs){
+	if((processes < max_total_childs) && (id < max_childs_master)){
 		run(id);
 	}
-	else{
-		waitpid(-(*children), &status, 0);
-		max_childs_master--;
-		run(id);
-	}
+	//else{
+	//	waitpid(-(*children), &status, 0);
+	//	--;
+	//	run(id);
+	//}
 
 }
 
 void run(int id){ 
-	max_childs_master++;
+	processes++;
 	if(fork() == 0){
 	 	if(id == 1){
 	 		(*children) = getpid();
