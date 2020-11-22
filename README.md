@@ -1,4 +1,12 @@
-# palindrome
+# CS 4760 Operating Systems
+
+Assignment 2 Due Date: October 02, 2020
+
+# Concurrent UNIX Processes and shared memory
+
+# Purpose
+
+The goal of this homework is to become familiar with concurrent processing in Linux using shared memory.
 
 NOTES
 
@@ -37,15 +45,6 @@ Nothing, all possible edge cases tested.
 in case of program failure "ipcrm -a" may need to be called
 if problems persists "pkill -u $USER" may also need to be called
 
-# CS 4760 Operating Systems
-
-Assignment 2 Due Date: October 02, 2020
-
-# Concurrent UNIX Processes and shared memory
-
-# Purpose
-
-The goal of this homework is to become familiar with concurrent processing in Linux using shared memory.
 
 # Task
 
